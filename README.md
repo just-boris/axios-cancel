@@ -1,6 +1,9 @@
 ## Axios-cancel
 
-Custom adapter for [axios] with ability to cancel requests
+Custom adapter for [axios] with ability to [cancel requests](https://github.com/mzabriskie/axios/issues/333).
+It uses [cancel] library as shared source of cancel-related abstractions.
+
+Now it works only in browser environment and contains modified version of original axios XHR-adapter. If you are also interested in Node.js support, [let me know](https://github.com/just-boris/axios-cancel/issues/new)
 
 ## Installation
 
@@ -45,21 +48,31 @@ axios.defaults.adapter = cancelXhrAdapter;
 ```js
 import React from 'react';
 import axios from 'axios';
-import adapter from 'axios-cancel';
+import cancelXhrAdapter from 'axios-cancel';
 import {Cancellation} from 'axios-cancel/cancel';
 
 class App extends React.Component {
   
   componentDidMount() {
     this.cancellation = new Cancellation();
-    axios('/api', {adapter, cancellation}).then(
-      ({data}) => this.setState({data})
-    )
+    axios('/api', {
+      adapter: cancelXhrAdapter,
+      cancellation: this.cancellation
+    }).then(({data}) => {
+      this.setState({data})
+      this.cancellation = null;
+    })
   }
   
   compomentWillUnmount() {
+    if(this.cancellation) {
+      this.cancellation.cancel();
+    }
   }
 }
 ```
 
+Now you can get rid of data, when you are not interested in it anymore. Yay!
+
 [axios]: https://github.com/mzabriskie/axios
+[cancel]: https://github.com/nickuraltsev/cancel
