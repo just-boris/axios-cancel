@@ -59,9 +59,9 @@ class App extends React.Component {
       adapter: cancelXhrAdapter,
       cancellation: this.cancellation
     }).then(({data}) => {
-      this.setState({data})
+      this.setState({data});
       this.cancellation = null;
-    })
+    });
   }
   
   compomentWillUnmount() {
