@@ -1,36 +1,34 @@
 var axios = require('axios');
-var Cancellation = require('cancel/lib/Cancellation').default;
-var CancellationError = require('cancel/lib/CancellationError').default;
-var currentCancellation;
+var cancel = require('../cancel');
 
+//set custom adapter as default for all axios calls
 axios.defaults.adapter = require('../xhr');
 
 var button = document.querySelector('.load');
+var cancellation;
 
 function finishRequest(status) {
-    currentCancellation = null;
+    cancellation = null;
     button.innerText = 'Make request'
     document.querySelector('.status').innerHTML = status;
 }
 
 button.addEventListener('click', function() {
-    if(!currentCancellation) {
+    if(!cancellation) {
         button.innerText = 'Cancel'
-        currentCancellation = new Cancellation()
         document.querySelector('.status').innerHTML = 'Loading...'
-        axios('/api', {
-            cancellation: currentCancellation
-        }).then(function(response) {
-            finishRequest(JSON.stringify(response.data))
+
+        //put cancellation token as request option
+        cancellation = new cancel.Cancellation()
+        axios('/api', {cancellation: cancellation}).then(function() {
+            finishRequest('Success')
         }, function(error) {
-            if(error instanceof CancellationError) {
-                finishRequest('cancelled');
-            } else {
-                finishRequest('error');
-            }
+            //cancellation can be handled there as special error object
+            finishRequest(error instanceof cancel.CancellationError ? 'Cancelled' : 'Error');
         })
     } else {
-        currentCancellation.cancel();
+        //cancel token if we have some unresolved
+        cancellation.cancel();
         finishRequest();
     }
 });

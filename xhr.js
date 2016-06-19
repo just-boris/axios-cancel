@@ -1,5 +1,5 @@
 'use strict';
-var cancel = require('cancel');
+var cancel = require('./cancel');
 var utils = require('axios/lib/utils');
 var buildURL = require('axios/lib/helpers/buildURL');
 var parseHeaders = require('axios/lib/helpers/parseHeaders');

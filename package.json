@@ -2,7 +2,7 @@
   "name": "axios-cancel",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "xhr.js",
   "scripts": {
     "start": "node example/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
