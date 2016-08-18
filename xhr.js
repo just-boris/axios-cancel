@@ -146,10 +146,12 @@ module.exports = function xhrAdapter(resolve, reject, config) {
   }
 
   cancellation.onCancel(function() {
-    // Abort the HTTP request
-    request.abort();
-    // Reject with `CancellationError` so that the caller can distinguish between cancellation and failure
-    reject(new cancel.CancellationError('Request has been canceled.'));
+    if (request) {
+      // Abort the HTTP request
+      request.abort();
+      // Reject with `CancellationError` so that the caller can distinguish between cancellation and failure
+      reject(new cancel.CancellationError('Request has been canceled.'));
+    }
   });
 
   if (requestData === undefined) {
