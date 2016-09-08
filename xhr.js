@@ -3,9 +3,9 @@ var cancel = require('./cancel');
 var utils = require('axios/lib/utils');
 var buildURL = require('axios/lib/helpers/buildURL');
 var parseHeaders = require('axios/lib/helpers/parseHeaders');
-var transformData = require('axios/lib/helpers/transformData');
+var transformData = require('axios/lib/core/transformData');
 var isURLSameOrigin = require('axios/lib/helpers/isURLSameOrigin');
-var settle = require('axios/lib/helpers/settle');
+var settle = require('axios/lib/core/settle');
 
 module.exports = function xhrAdapter(resolve, reject, config) {
   var requestData = config.data;
