@@ -8,7 +8,7 @@ Now it works only in browser environment and contains modified version of origin
 ## Installation
 
 1. Install this repository as dependency `npm install github:just-boris/axios-cancel#v2.0.0`
-2. You should have `axios` (version 0.14) installed. For previous version install version 1.0.0 of this package
+2. You should have `axios` (version 0.14) installed. For previous version support, install v1.0.0 of this package
 3. Module uses CommonJS modules, so you need to use Webpack or Browerify to build it for browser. See [example](example) folder for possible setup.
 
 ## Usage
