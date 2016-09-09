@@ -1,14 +1,14 @@
 'use strict';
 var cancel = require('./cancel');
 var utils = require('axios/lib/utils');
+var settle = require('axios/lib/core/settle');
 var buildURL = require('axios/lib/helpers/buildURL');
 var parseHeaders = require('axios/lib/helpers/parseHeaders');
-var transformData = require('axios/lib/core/transformData');
 var isURLSameOrigin = require('axios/lib/helpers/isURLSameOrigin');
-var settle = require('axios/lib/core/settle');
+var createError = require('axios/lib/core/createError');
 
 module.exports = function xhrAdapter(config) {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function dispatchXhrRequest(resolve, reject) {
     var requestData = config.data;
     var requestHeaders = config.headers;
     var cancellation = config.cancellation;
@@ -52,11 +52,7 @@ module.exports = function xhrAdapter(config) {
       var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
       var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
       var response = {
-        data: transformData(
-          responseData,
-          responseHeaders,
-          config.transformResponse
-        ),
+        data: responseData,
         // IE sends 1223 instead of 204 (https://github.com/mzabriskie/axios/issues/201)
         status: request.status === 1223 ? 204 : request.status,
         statusText: request.status === 1223 ? 'No Content' : request.statusText,
@@ -75,7 +71,7 @@ module.exports = function xhrAdapter(config) {
     request.onerror = function handleError() {
       // Real errors are hidden from us by the browser
       // onerror should only fire if it's a network error
-      reject(new Error('Network Error'));
+      reject(createError('Network Error', config));
 
       // Clean up request
       request = null;
@@ -83,10 +79,7 @@ module.exports = function xhrAdapter(config) {
 
     // Handle timeout
     request.ontimeout = function handleTimeout() {
-      var err = new Error('timeout of ' + config.timeout + 'ms exceeded');
-      err.timeout = config.timeout;
-      err.code = 'ECONNABORTED';
-      reject(err);
+      reject(createError('timeout of ' + config.timeout + 'ms exceeded', config, 'ECONNABORTED'));
 
       // Clean up request
       request = null;
@@ -99,7 +92,7 @@ module.exports = function xhrAdapter(config) {
       var cookies = require('axios/lib/helpers/cookies');
 
       // Add xsrf header
-      var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
+      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
           cookies.read(config.xsrfCookieName) :
           undefined;
 
@@ -138,12 +131,13 @@ module.exports = function xhrAdapter(config) {
     }
 
     // Handle progress if needed
-    if (config.progress) {
-      if (config.method === 'post' || config.method === 'put') {
-        request.upload.addEventListener('progress', config.progress);
-      } else if (config.method === 'get') {
-        request.addEventListener('progress', config.progress);
-      }
+    if (typeof config.onDownloadProgress === 'function') {
+      request.addEventListener('progress', config.onDownloadProgress);
+    }
+
+    // Not all browsers support upload events
+    if (typeof config.onUploadProgress === 'function' && request.upload) {
+      request.upload.addEventListener('progress', config.onUploadProgress);
     }
 
     cancellation.onCancel(function() {
