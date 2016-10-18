@@ -1,5 +1,7 @@
 ## Axios-cancel
 
+> :warning: **DEPRECATED**. Since 0.15 version Axios supports this feature in the core. See [Cancellation section](https://github.com/mzabriskie/axios#cancellation) in their Readme to find a way to migrate.
+
 Custom adapter for [axios] with ability to [cancel requests](https://github.com/mzabriskie/axios/issues/333).
 It uses [cancel] library as shared source of cancel-related abstractions.
 
